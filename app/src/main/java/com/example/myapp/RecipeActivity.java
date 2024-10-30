@@ -7,10 +7,15 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.room.Room;
+import android.os.AsyncTask;
+import com.example.myapp.database.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RecipeActivity extends AppCompatActivity {
+
+    private RecipeDatabase db;
 
     private EditText titleEditText, instructionsEditText;
     private Button saveButton, addButton;
@@ -29,6 +34,9 @@ public class RecipeActivity extends AppCompatActivity {
         addButton = findViewById(R.id.addButton);
         saveButton = findViewById(R.id.saveRecipeButton);
 
+        // Inicjalizacja bazy danych
+        db = Room.databaseBuilder(getApplicationContext(), RecipeDatabase.class, "recipe-database").build();
+
         // Obsługa kliknięcia na przycisk dodawania
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,12 +54,12 @@ public class RecipeActivity extends AppCompatActivity {
 
         // Tworzenie EditText dla składnika
         EditText ingredientEditText = new EditText(this);
-        ingredientEditText.setLayoutParams(new LinearLayout.LayoutParams(202, LinearLayout.LayoutParams.WRAP_CONTENT));
+        ingredientEditText.setLayoutParams(new LinearLayout.LayoutParams(400, LinearLayout.LayoutParams.WRAP_CONTENT));
         ingredientEditText.setHint("Składniki");
 
         // Tworzenie EditText dla ilości
         EditText amountEditText = new EditText(this);
-        amountEditText.setLayoutParams(new LinearLayout.LayoutParams(70, LinearLayout.LayoutParams.WRAP_CONTENT));
+        amountEditText.setLayoutParams(new LinearLayout.LayoutParams(140, LinearLayout.LayoutParams.WRAP_CONTENT));
         amountEditText.setHint("ilość");
 
         // Tworzenie EditText dla jednostki
@@ -82,5 +90,31 @@ public class RecipeActivity extends AppCompatActivity {
         // Dodanie nowego layoutu do kontenera
         ingredientsContainer.addView(newIngredientLayout);
         ingredientLayouts.add(newIngredientLayout); // Dodajemy layout do listy dla późniejszego dostępu
+    }
+    private void saveRecipeToDatabase() {
+        String title = titleEditText.getText().toString();
+        String instructions = instructionsEditText.getText().toString();
+
+        Recipe recipe = new Recipe(title, instructions);
+
+        // Wykonanie operacji zapisu w tle
+        AsyncTask.execute(() -> {
+            long recipeId = db.recipeDao().insertRecipe(recipe);
+
+            List<Ingredient> ingredients = new ArrayList<>();
+            for (LinearLayout layout : ingredientLayouts) {
+                EditText ingredientEditText = (EditText) layout.getChildAt(0);
+                EditText amountEditText = (EditText) layout.getChildAt(1);
+                EditText unitEditText = (EditText) layout.getChildAt(2);
+
+                String name = ingredientEditText.getText().toString();
+                String amount = amountEditText.getText().toString();
+                String unit = unitEditText.getText().toString();
+
+                ingredients.add(new Ingredient((int) recipeId, name, amount, unit));
+            }
+
+            db.recipeDao().insertIngredients(ingredients);
+        });
     }
 }

@@ -21,14 +21,14 @@ public class SavedRecipesActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recipesRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Przykładowe przepisy (tutaj możesz załadować przepisy np. z bazy danych)
+
         recipeList = new ArrayList<>();
         recipeList.add("Spaghetti Bolognese");
         recipeList.add("Pizza Margherita");
         recipeList.add("Tiramisu");
 
-        // Tworzymy adapter z listą przepisów
-        recipeAdapter = new RecipeAdapter(recipeList);
-        recyclerView.setAdapter(recipeAdapter);
+
+        //recipeAdapter = new RecipeAdapter(recipeList);
+        //recyclerView.setAdapter(recipeAdapter);
     }
 }
